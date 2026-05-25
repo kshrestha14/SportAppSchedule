@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sports Schedules</title>
+  <style>
+   
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #DFF1F1;
+      color: #1a3535;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #2a8c8c;
+      padding: 1.1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+    }
+
+    header a {
+      color: #DFF1F1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid #DFF1F180;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    header a:hover { background: #ffffff20; }
+
+    main {
+      max-width: 1000px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .toolbar h2 {
+      font-size: 1rem;
+      color: #5a8080;
+      font-weight: 500;
+    }
+
+    #refresh-btn {
+      background: #2a8c8c;
+      color: #fff;
+      border: none;
+      padding: 0.45rem 1rem;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    #refresh-btn:hover { background: #1f6b6b; }
+
+    #status {
+      text-align: center;
+      padding: 2rem 0;
+      color: #5a8080;
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 1.1rem;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #b5dede;
+      border-radius: 10px;
+      padding: 1.2rem 1.4rem;
+      transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 16px #2a8c8c18;
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+    }
+
+    .card-sport {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1a3535;
+    }
+
+    .sport-badge {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .badge-upcoming  { background: #e8f8f8; color: #2a8c8c; border: 1px solid #b5dede; }
+    .badge-live      { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c2; animation: pulse 1.4s infinite; }
+    .badge-completed { background: #e6f4ee; color: #1e7e5e; border: 1px solid #b8dece; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.5; }
+    }
+
+    .card-detail {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      color: #5a8080;
+      margin-top: 0.35rem;
+    }
+    .card-detail .label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #2a8c8c;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      min-width: 42px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e8f4f4;
+      margin: 0.85rem 0;
+    }
+
+    .result-box { font-size: 0.84rem; }
+    .result-score  { color: #1a3535; font-weight: 600; margin-bottom: 0.25rem; }
+    .result-winner { color: #1e7e5e; font-weight: 700; }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 0;
+      color: #5a8080;
+    }
+    .empty-state p { font-size: 1rem; margin-top: 0.4rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Sports Schedules</h1>
+  <a href="/admin.html">Admin</a>
+</header>
+
+<main>
+  <div class="toolbar">
+    <h2 id="count-label">Loading schedules&hellip;</h2>
+    <button id="refresh-btn" onclick="loadSchedules()">Refresh</button>
+  </div>
+  <p id="status"></p>
+  <div id="grid" class="grid"></div>
+</main>
+
+<script>
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function buildCard(s) {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // Header: sport name + badge
+    const hdr = document.createElement('div');
+    hdr.className = 'card-header';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'card-sport';
+    nameEl.textContent = s.sport_name;
+
+    const statusMap = {
+      upcoming:  ['badge-upcoming',  'Upcoming'],
+      live:      ['badge-live',      'Live'],
+      completed: ['badge-completed', 'Final'],
+    };
+    const [badgeClass, badgeText] = statusMap[s.status] || statusMap.upcoming;
+    const badge = document.createElement('span');
+    badge.className = 'sport-badge ' + badgeClass;
+    badge.textContent = badgeText;
+
+    hdr.append(nameEl, badge);
+
+    // Details
+    const dateRow = document.createElement('div');
+    dateRow.className = 'card-detail';
+    const dateLabel = document.createElement('span');
+    dateLabel.className = 'label';
+    dateLabel.textContent = 'Date';
+    const dateVal = document.createElement('span');
+    dateVal.textContent = formatDate(s.date);
+    dateRow.append(dateLabel, dateVal);
+
+    const timeRow = document.createElement('div');
+    timeRow.className = 'card-detail';
+    const timeLabel = document.createElement('span');
+    timeLabel.className = 'label';
+    timeLabel.textContent = 'Time';
+    const timeVal = document.createElement('span');
+    timeVal.textContent = s.time;
+    timeRow.append(timeLabel, timeVal);
+
+    const venueRow = document.createElement('div');
+    venueRow.className = 'card-detail';
+    const venueLabel = document.createElement('span');
+    venueLabel.className = 'label';
+    venueLabel.textContent = 'Venue';
+    const venueVal = document.createElement('span');
+    venueVal.textContent = s.venue;
+    venueRow.append(venueLabel, venueVal);
+
+    const teamsRow = document.createElement('div');
+    teamsRow.className = 'card-details';
+    const teamsLable = document.createElement('span');
+    teamsLable.className = 'label';
+    teamsLable.textContent = 'Teams';
+    const teamsVal = document.createElement('span');
+    teamsVal.textContent = s.Team_A + 'vs' + s.Team_B;
+    teamsRow.append(teamsLable, teamsVal);
+
+    card.append(hdr, dateRow, timeRow, venueRow, teamsRow);
+
+    // Result box
+    if (s.score || s.result) {
+      const hr = document.createElement('hr');
+      hr.className = 'divider';
+      card.appendChild(hr);
+
+      const box = document.createElement('div');
+      box.className = 'result-box';
+
+      if (s.score) {
+        const scoreEl = document.createElement('div');
+        scoreEl.className = 'result-score';
+        scoreEl.textContent = 'Score: ' + s.score;
+        box.appendChild(scoreEl);
+      }
+      if (s.result) {
+        const resultEl = document.createElement('div');
+        resultEl.className = 'result-winner';
+        resultEl.textContent = 'Result: ' + s.result;
+        box.appendChild(resultEl);
+      }
+      card.appendChild(box);
+    }
+
+    return card;
+  }
+
+  async function loadSchedules() {
+    const status = document.getElementById('status');
+    const grid   = document.getElementById('grid');
+    const label  = document.getElementById('count-label');
+
+    status.textContent = 'Loading…';
+    grid.textContent   = '';
+    label.textContent  = 'Loading schedules…';
+
+    try {
+      const res  = await fetch('/schedules');
+      const data = await res.json();
+      status.textContent = '';
+
+      if (!data.length) {
+        label.textContent = '0 schedules';
+        const empty = document.createElement('div');
+        empty.className = 'empty-state';
+        const icon = document.createElement('div');
+        icon.style.fontSize = '2.5rem';
+        icon.textContent = '--';
+        const p = document.createElement('p');
+        p.textContent = 'No schedules yet. Check back soon.';
+        empty.append(icon, p);
+        grid.appendChild(empty);
+        return;
+      }
+
+      label.textContent = data.length + ' schedule' + (data.length !== 1 ? 's' : '');
+      data.forEach(s => grid.appendChild(buildCard(s)));
+    } catch {
+      status.textContent = 'Failed to load schedules. Is the server running?';
+      label.textContent  = '';
+    }
+  }
+
+  loadSchedules();
+</script>
+
+</body>
+</html>

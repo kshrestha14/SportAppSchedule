@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Sports Schedules</title>
+  <style>
+    
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #DFF1F1;
+      color: #1a3535;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    header {
+      background: #2a8c8c;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 1.3rem; font-weight: 700; color: #fff; }
+    header nav { display: flex; gap: 0.75rem; align-items: center; }
+    header a {
+      color: #DFF1F1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid #DFF1F180;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+    header a:hover { background: #ffffff20; }
+    #logout-btn {
+      background: #c0392b;
+      color: #fff;
+      border: none;
+      padding: 0.35rem 0.85rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: none;
+      transition: background 0.2s;
+    }
+    #logout-btn:hover { background: #a93226; }
+
+    /* Login */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 58px);
+    }
+    .login-card {
+      background: #fff;
+      border: 1px solid #b5dede;
+      border-radius: 14px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 370px;
+      box-shadow: 0 4px 24px #2a8c8c10;
+    }
+    .login-card h2 { font-size: 1.4rem; font-weight: 700; color: #1a3535; margin-bottom: 0.3rem; }
+    .login-card p  { color: #5a8080; font-size: 0.875rem; margin-bottom: 1.75rem; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #2a8c8c;
+      margin-bottom: 0.35rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="date"],
+    input[type="time"],
+    select {
+      width: 100%;
+      background: #f4fbfb;
+      border: 1px solid #b5dede;
+      border-radius: 7px;
+      color: #1a3535;
+      padding: 0.6rem 0.85rem;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus { border-color: #2a8c8c; background: #fff; }
+
+    .btn-primary {
+      width: 100%;
+      background: #2a8c8c;
+      color: #fff;
+      border: none;
+      padding: 0.7rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-primary:hover { background: #1f6b6b; }
+
+    .error-msg {
+      color: #c0392b;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+      text-align: center;
+      min-height: 1.2rem;
+    }
+
+    /* Dashboard */
+    #dashboard { display: none; max-width: 1040px; margin: 2rem auto; padding: 0 1.5rem; }
+
+    .section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #2a8c8c;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.85rem;
+    }
+
+    .form-card {
+      background: #fff;
+      border: 1px solid #b5dede;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 2px 12px #2a8c8c08;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0 1.25rem;
+    }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 0.25rem; }
+
+    .btn-success {
+      background: #2a8c8c;
+      color: #fff;
+      border: none;
+      padding: 0.6rem 1.4rem;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-success:hover { background: #1f6b6b; }
+
+    .btn-cancel {
+      background: #e8f4f4;
+      color: #5a8080;
+      border: 1px solid #b5dede;
+      padding: 0.6rem 1.2rem;
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: none;
+      font-family: inherit;
+    }
+    .btn-cancel:hover { background: #d4ecec; }
+
+    /* Table */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 12px;
+      border: 1px solid #b5dede;
+      background: #fff;
+      box-shadow: 0 2px 12px #15969608;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: #e8f8f8; }
+    th {
+      text-align: left;
+      padding: 0.8rem 1rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #2a8c8c;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      border-bottom: 1px solid #b5dede;
+    }
+    tbody tr { transition: background 0.12s; }
+    tbody tr:hover { background: #f4fbfb; }
+    td {
+      padding: 0.8rem 1rem;
+      font-size: 0.875rem;
+      color: #1a3535;
+      border-bottom: 1px solid #e8f4f4;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .status-pill {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .pill-upcoming  { background: #e8f8f8; color: #2a8c8c; border: 1px solid #b5dede; }
+    .pill-live      { background: #fdecea; color: #c0392b; border: 1px solid #f5c6c2; }
+    .pill-completed { background: #e6f4ee; color: #1e7e5e; border: 1px solid #b8dece; }
+
+    .action-btns { display: flex; gap: 0.5rem; }
+    .btn-edit {
+      background: #e8f8f8;
+      color: #2a8c8c;
+      border: 1px solid #b5dede;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-edit:hover { background: #d4ecec; }
+    .btn-delete {
+      background: #fdecea;
+      color: #c0392b;
+      border: 1px solid #f5c6c2;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+    .btn-delete:hover { background: #fad4d0; }
+
+    .empty-row td { text-align: center; color: #5a8080; padding: 2.5rem; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1e7e5e;
+      color: #fff;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.25s, transform 0.25s;
+      pointer-events: none;
+      z-index: 999;
+    }
+    .toast.error { background: #c0392b; }
+    .toast.show  { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Admin Panel</h1>
+  <nav>
+    <a href="/">View Site</a>
+    <button id="logout-btn" onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h2>Admin Login</h2>
+    <p>Sign in to manage sports schedules</p>
+    <label for="username">Username</label>
+    <input type="text" id="username" placeholder="admin" />
+    <label for="password">Password</label>
+    <input type="password" id="password" placeholder="••••••••"
+           onkeydown="if(event.key==='Enter') doLogin()" />
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <p class="error-msg" id="login-error"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+
+  <!-- Form -->
+  <div class="form-card">
+    <p class="section-title" id="form-title">Create Schedule</p>
+    <div class="form-grid">
+      <div>
+        <label>Sport Name</label>
+        <input type="text" id="f-sport" placeholder="Name" />
+      </div>
+      <div>
+        <label>Venue</label>
+        <input type="text" id="f-venue" placeholder="Location" />
+      </div>
+      <div>  
+        <label>Team 1</label>
+        <input type="text" id="f-teams" placeholder="Team_A" />
+      </div>
+      <div>
+        <label>Team 2</label>
+        <input type="text" id="f-teams2" placeholder="Team_B" />
+      </div>
+      <div>
+        <label>Date</label>
+        <input type="date" id="f-date" />
+      </div>
+      <div>
+        <label>Time</label>
+        <input type="time" id="f-time" />
+      </div>
+      <div>
+        <label>Status</label>
+        <select id="f-status">
+          <option value="upcoming">Upcoming</option>
+          <option value="live">Live</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+      <div>
+        <label>Score</label>
+        <input type="text" id="f-score" placeholder="Score" />
+      </div>
+      <div style="grid-column: 1 / -1">
+        <label>Result</label>
+        <input type="text" id="f-result" placeholder="Result" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-success" id="submit-btn" onclick="submitForm()">Add Schedule</button>
+      <button class="btn-cancel"  id="cancel-btn" onclick="resetForm()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <p class="section-title">All Schedules</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Sport</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Venue</th>
+          <th>Status</th>
+          <th>Score / Result</th>
+          <th>Actions</th>
+          <th>Teams</th>
+        </tr>
+      </thead>
+      <tbody id="schedule-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let token     = localStorage.getItem('admin_token') || '';
+  let editingId = null;
+
+  function authHeader() {
+    return { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
+  }
+
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '') + ' show';
+    setTimeout(() => { t.className = 'toast' + (isError ? ' error' : ''); }, 2800);
+  }
+
+  function logout() {
+    localStorage.removeItem('admin_token');
+    token = '';
+    showLogin();
+  }
+
+  function showLogin() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('dashboard').style.display    = 'none';
+    document.getElementById('logout-btn').style.display   = 'none';
+  }
+
+  function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display    = 'block';
+    document.getElementById('logout-btn').style.display   = 'inline-block';
+    loadSchedules();
+  }
+
+  async function doLogin() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    document.getElementById('login-error').textContent = '';
+    try {
+      const res  = await fetch('/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        document.getElementById('login-error').textContent = data.message || 'Login failed';
+        return;
+      }
+      token = data.token;
+      localStorage.setItem('admin_token', token);
+      showDashboard();
+    } catch {
+      document.getElementById('login-error').textContent = 'Server unreachable';
+    }
+  }
+
+  async function loadSchedules() {
+    const tbody = document.getElementById('schedule-body');
+    tbody.textContent = '';
+    try {
+      const res  = await fetch('/schedules');
+      const data = await res.json();
+      if (!data.length) {
+        const row = document.createElement('tr');
+        row.className = 'empty-row';
+        const td = document.createElement('td');
+        td.colSpan = 7;
+        td.textContent = 'No schedules yet. Add one above.';
+        row.appendChild(td);
+        tbody.appendChild(row);
+        return;
+      }
+      data.forEach(s => tbody.appendChild(buildRow(s)));
+    } catch {
+      showToast('Failed to load schedules', true);
+    }
+  }
+
+  const PILL_MAP = {
+    upcoming:  ['pill-upcoming',  'Upcoming'],
+    live:      ['pill-live',      'Live'],
+    completed: ['pill-completed', 'Final'],
+  };
+
+  function buildRow(s) {
+    const row = document.createElement('tr');
+
+    const cells = [s.sport_name, s.Team_A, s.Team_B, s.date, s.time, s.venue].map(val => {
+      const td = document.createElement('td');
+      td.textContent = val;
+      return td;
+    });
+
+    const tdStatus = document.createElement('td');
+    const [pillClass, pillText] = PILL_MAP[s.status] || PILL_MAP.upcoming;
+    const pill = document.createElement('span');
+    pill.className = 'status-pill ' + pillClass;
+    pill.textContent = pillText;
+    tdStatus.appendChild(pill);
+
+    const tdResult = document.createElement('td');
+    tdResult.style.fontSize = '0.82rem';
+    if (s.score) {
+      const d = document.createElement('div');
+      d.textContent = s.score;
+      d.style.color = '#1a3535';
+      d.style.fontWeight = '600';
+      tdResult.appendChild(d);
+    }
+    if (s.result) {
+      const d = document.createElement('div');
+      d.textContent = s.result;
+      d.style.color = '#1e7e5e';
+      d.style.fontWeight = '700';
+      tdResult.appendChild(d);
+    }
+    if (!s.score && !s.result) tdResult.textContent = '—';
+
+    const tdActions = document.createElement('td');
+    const wrap = document.createElement('div');
+    wrap.className = 'action-btns';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-edit';
+    editBtn.textContent = 'Edit';
+    editBtn.onclick = () => startEdit(s);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-delete';
+    delBtn.textContent = 'Delete';
+    delBtn.onclick = () => deleteSchedule(s._id);
+
+    wrap.append(editBtn, delBtn);
+    tdActions.appendChild(wrap);
+
+    row.append(...cells, tdStatus, tdResult, tdActions);
+    return row;
+  }
+
+  function startEdit(s) {
+    editingId = s._id;
+    document.getElementById('f-sport').value  = s.sport_name;
+    document.getElementById('f-Team_A').value  = s.Team_A;
+    document.getElementById('f-Team_B').value  = s.Team_B;
+    document.getElementById('f-venue').value  = s.venue;
+    document.getElementById('f-date').value   = s.date;
+    document.getElementById('f-time').value   = s.time;
+    document.getElementById('f-status').value = s.status  || 'upcoming';
+    document.getElementById('f-score').value  = s.score   || '';
+    document.getElementById('f-result').value = s.result  || '';
+    document.getElementById('form-title').textContent   = 'Edit Schedule';
+    document.getElementById('submit-btn').textContent   = 'Update Schedule';
+    document.getElementById('cancel-btn').style.display = 'inline-block';
+    document.getElementById('f-sport').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetForm() {
+    editingId = null;
+    ['f-sport','f-venue','f-date','f-time','f-score','f-result'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-status').value          = 'upcoming';
+    document.getElementById('form-title').textContent   = 'Create Schedule';
+    document.getElementById('submit-btn').textContent   = 'Add Schedule';
+    document.getElementById('cancel-btn').style.display = 'none';
+  }
+
+  async function submitForm() {
+    const sport_name = document.getElementById('f-sport').value.trim();
+    const Team_A     = document.getElementById('f-Team_A').value.trim();
+    const Team_B     = document.getElementById('f-Team_B').value.trim();
+    const venue      = document.getElementById('f-venue').value.trim();
+    const date       = document.getElementById('f-date').value;
+    const time       = document.getElementById('f-time').value;
+    const status     = document.getElementById('f-status').value;
+    const score      = document.getElementById('f-score').value.trim();
+    const result     = document.getElementById('f-result').value.trim();
+
+    if (!sport_name || !Team_A || !Team_B || !venue || !date || !time) {
+      showToast('Sport, Teams,venue, date and time are required', true);
+      return;
+    }
+
+    const url    = editingId ? '/schedules/' + editingId : '/schedules';
+    const method = editingId ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: authHeader(),
+        body: JSON.stringify({ sport_name, Team_A, Team_B, date, time, venue, status, score, result }),
+      });
+      if (res.status === 401) { logout(); return; }
+      if (!res.ok) {
+        const err = await res.json();
+        showToast(err.message || 'Error saving', true);
+        return;
+      }
+      showToast(editingId ? 'Schedule updated' : 'Schedule created');
+      resetForm();
+      loadSchedules();
+    } catch {
+      showToast('Server error', true);
+    }
+  }
+
+  async function deleteSchedule(id) {
+    if (!confirm('Delete this schedule?')) return;
+    try {
+      const res = await fetch('/schedules/' + id, { method: 'DELETE', headers: authHeader() });
+      if (res.status === 401) { logout(); return; }
+      showToast('Schedule deleted');
+      loadSchedules();
+    } catch {
+      showToast('Delete failed', true);
+    }
+  }
+
+  if (token) showDashboard();
+</script>
+
+</body>
+</html>
