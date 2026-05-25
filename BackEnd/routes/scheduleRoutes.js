@@ -6,6 +6,8 @@ const ctrl     = require('../controllers/scheduleController');
 
 const scheduleValidation = [
   body('sport_name').notEmpty().withMessage('sport_name is required'),
+  body('Team_A').notEmpty().withMessage('Team_A is required'),
+  body('Team_B').notEmpty().withMessage('Team_B is required'),
   body('date').notEmpty().isISO8601().withMessage('date must be a valid date (YYYY-MM-DD)'),
   body('time').notEmpty().matches(/^\d{2}:\d{2}$/).withMessage('time must be HH:MM format'),
   body('venue').notEmpty().withMessage('venue is required'),

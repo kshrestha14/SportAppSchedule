@@ -1,0 +1,69 @@
+# Name of the GitHub Actions workflow
+
+name: CI/CD Pipeline
+
+# Define when the workflow should run. In your case, the workflow is triggered by two events: push and pull request.
+
+on:
+  push: # Runs on every push to the 'main' branch
+    branches:
+      - main
+  pull_request: # Runs on pull requests to 'main' branch
+    branches:
+      - main
+
+jobs:
+  # CI Process: Build & Test
+  build-and-test: 
+    name: Build and Test
+    runs-on: ubuntu-latest # Specifies the environment (Linux)
+
+    steps:
+      # Checkout the repository code from GitHub to the runner
+      - name: Checkout Repository
+        uses: actions/checkout@v3 # Fetches the code from the GitHub repository to the runner
+
+      # Set up Node.js environment
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18 # Specifies the Node.js version to use
+
+      # Install dependencies defined in package.json
+      - name: Install Dependencies
+        run: npm install # Installs project dependencies (node_modules)
+
+      # Run unit tests to check code functionality
+      - name: Run Tests
+        run: npm test # Runs the unit tests defined in your project
+
+      # Build the project (if applicable)
+      - name: Build Project
+        run: npm run build # Builds the project (e.g., for production, bundling files)
+
+
+
+  # CD Process: Deployment
+  deploy: 
+    name: Deploy to AWS
+    needs: build-and-test # Deploy only if the build-and-test job succeeds
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code again for the deployment job
+      - name: Checkout Repository
+        uses: actions/checkout@v3 # Fetches the code from the GitHub repository to the runner for deployment
+
+      # Set up AWS deployment using AWS credentials stored in GitHub secrets
+      - name: Deploy to AWS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # AWS Access Key
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} # AWS Secret Access Key
+          AWS_REGION: "us-east-1" # Specify AWS region (e.g., us-east-1)
+        run: |
+          echo "Deploying application..."
+          # Example: Deploying static site to AWS S3
+          aws s3 sync ./build s3://your-bucket-name --delete # Sync build folder with S3 bucket
+          
+          # Example: Restart a server on EC2 if needed
+          ssh -o StrictHostKeyChecking=no ec2-user@your-ec2-instance 'pm2 restart all' # Restart server using pm2 on EC2

@@ -3,6 +3,8 @@ const mongoose = require('mongoose');
 const scheduleSchema = new mongoose.Schema(
   {
     sport_name: { type: String, required: true, trim: true },
+    Team_A:     { type: String, required: true, trim: true },
+    Team_B:     { type: String, required: true, trim: true },
     date:       { type: String, required: true },
     time:       { type: String, required: true },
     venue:      { type: String, required: true, trim: true },

@@ -1,18 +1,25 @@
-require('dotenv').config();
-const express   = require('express');
 const path      = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+
+const express   = require('express');
 const morgan    = require('morgan');
 const connectDB = require('./config/db');
 
 const app = express();
 
-connectDB();
-
 app.use(morgan('dev'));
 app.use(express.json());
+
+const frontEndDir = path.join(__dirname, '..', 'FrontEnd');
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(frontEndDir, 'index.html'));
+});
 app.get('/admin', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'FrontEnd', 'admin.html'));
-}); 
+  res.sendFile(path.join(frontEndDir, 'admin.html'));
+});
+app.get('/admin.html', (req, res) => res.redirect('/admin'));
+
 app.use('/admin',     require('./routes/adminRoutes'));
 app.use('/schedules', require('./routes/scheduleRoutes'));
 
@@ -22,4 +29,15 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const start = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+};
+
+start();

@@ -16,8 +16,10 @@ exports.createSchedule = async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
 
-  const { sport_name, date, time, venue } = req.body;
-  const schedule = await Schedule.create({ sport_name, date, time, venue });
+  const { sport_name, Team_A, Team_B, date, time, venue, status, score, result } = req.body;
+  const schedule = await Schedule.create({
+    sport_name, Team_A, Team_B, date, time, venue, status, score, result,
+  });
   res.status(201).json(schedule);
 };
 
