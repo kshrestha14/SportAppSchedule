@@ -1,36 +1,36 @@
 name: BackEnd CI
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  on:
+    push:
+      branches: [ main ]
+    pull_request:
+      branches: [ main ]
 
-jobs:
+  jobs:
     ci:
-        runs-on: ubuntu-latest
+      runs-on: ubuntu-latest
 
-    env:
-        port: 5000
-        MONGO_URI: mongodb://localhost:27017/sports_scheduling
-        MONGODB_URI: ${{ secrets.MONGODB_URI }}
+      env:
+        PORT: 5000
+        MONGO_URI: ${{ secrets.MONGO_URI }}
         ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
         ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
-    steps:
-        - name: Checkoutcode
+      steps:
+        - name: Checkout code
           uses: actions/checkout@v2
-        
+
         - name: Setup Node.js
           uses: actions/setup-node@v2
           with:
             node-version: '22'
             cache: npm
+
         - name: Start server
           run: node BackEnd/app.js &
 
         - name: Smoke test API
           run: |
-          curl -fsS http://localhost:5000/schedules
-          curl -fsS -o /dev/null -w "%{http_code}" http://localhost:5000/admin | grep -q 200
+            curl -fsS http://localhost:5000/schedules
+            curl -fsS -o /dev/null -w "%{http_code}" http://localhost:5000/admin | grep -q 200
